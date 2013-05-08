@@ -42,10 +42,10 @@ Currently, policies for allocations are hard-coded into the `fluxaaa` script, in
 * `polisci_flux` (Department allocation for Political Science: everyone in Political Science)
 * `stats_flux` (Department allocation for Statistics: Only Ph.D. students in Statistics; faculty, post-docs, and others get approved/added manually)
 
-To add policies for other allocations, refer to [Adding New Allocation Policies][#addpolicy], below.
+To add policies for other allocations, refer to [Adding New Allocation Policies](#addpolicy), below.
 
 
-Adding New Allocation Policies
+ADDING NEW ALLOCATION POLICIES
 ==============================
 
 <a id="addpolicy"></a> (To be written)
