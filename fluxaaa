@@ -22,6 +22,7 @@ BEGIN {
 
 our ( @managed_allocations, @attrs );
 our ( $ldap_server, $ca_file, $bind_dn, $bind_password, $search_base );
+our ( %override_add, %override_remove );
 our ( $ticket_email, $default_from, $MDIAG, $SENDMAIL );
 require "fluxaaa.conf";
 
@@ -41,10 +42,10 @@ sub
 get_allocation_userlist {
     my $allocation = $_[0];
 
-    print STDERR "Getting userlist for allocation $allocation ...\n" if $debug;
+    print "Getting userlist for allocation $allocation ...\n" if $debug;
 
     if ( $allocation !~ /^([a-z0-9_]+)$/ ) {
-        print STDERR "illegal allocation name, skipping: $allocation\n";
+        print "illegal allocation name, skipping: $allocation\n";
         $error = 1;
         return;
     }
@@ -53,7 +54,7 @@ get_allocation_userlist {
     open( MDIAG, "$MDIAG -a $allocation |" )
         or die "Unable to run mdiag: $!";
     while ( my $line = <MDIAG> ) {
-        print STDERR $line if $debug;
+        print $line if $debug;
         next unless $line =~ s/^\s+Users:\s+//;
         chomp( $line );
         for my $user ( split( ',', $line ) ) {
@@ -68,7 +69,7 @@ get_allocation_userlist {
 sub
 lookup_user {
     my $user = $_[0];
-    print STDERR "Searching LDAP for uid=$user ...\n" if $debug;
+    print "Searching LDAP for uid=$user ...\n" if $debug;
     my $msg = $ldap->search(
         base => $search_base,
         scope =>'sub',
@@ -79,7 +80,7 @@ lookup_user {
 
     my %user_info = ();
 
-    print STDERR "Parsing search results...\n" if $debug;
+    print "Parsing search results...\n" if $debug;
     for my $entry ( $msg->entries() ) {
         if ( $debug || $show_ldap_entry ) {
             print "\n";
@@ -106,6 +107,10 @@ lookup_user {
             }
         }
     }
+
+    # A fake attribute in case the user is not in LDAP but is in an
+    # override list.
+    $user_info{'fluxaaa_username'} = $user;
 
     return \%user_info;
 
@@ -168,6 +173,26 @@ determine_user_allocations {
             @{$$user_info{'umichAAAcadProgram'}} ) );
 
 
+    #
+    # Overrides:
+    #
+    
+    my $u = $$user_info{'fluxaaa_username'};
+
+    if ( my $allocs = $override_add{$u} ) {
+        for my $alloc (keys(%$allocs)) {
+            print "override: adding $u to $alloc\n" if $debug;
+            $a{$alloc}++;
+        }
+    }
+
+    if ( my $allocs = $override_remove{$u} ) {
+        for my $alloc (keys(%$allocs)) {
+            print "override: removing $u from $alloc\n" if $debug;
+            delete $a{$alloc};
+        }
+    }
+
     return %a;
 
 }
@@ -179,7 +204,7 @@ check_users {
 
     for my $user (@users) {
         if ( $user !~ /^([a-z0-9]{3,32})$/i ) {
-            print STDERR "illegal username, skipping: $user\n";
+            print "illegal username, skipping: $user\n";
             $error = 1;
             next;
         }
@@ -187,9 +212,9 @@ check_users {
         my $user_info = lookup_user( $user );
         my %allocations = determine_user_allocations( $user_info );
         if ( $debug ) {
-            print STDERR "Results for $user are:\n";
+            print "Results for $user are:\n";
             for my $allocation ( keys( %allocations ) ) {
-                print STDERR "$allocation: $user\n";
+                print "$allocation: $user\n";
             }
         }
         for my $allocation ( keys( %allocations ) ) {
@@ -197,11 +222,11 @@ check_users {
         }
     }
 
-    print STDERR "Results for all users:\n" if $debug;
+    print "Results for all users:\n" if $debug;
     my @output = ();
     for my $a ( sort( keys ( %allocation_policy_user ) ) ) {
         my $line = "$a: "
-            . join( ' ', sort( keys ( %{$allocation_policy_user{$a}} ) ) )
+            . join( ',', sort( keys ( %{$allocation_policy_user{$a}} ) ) )
             . "\n";
         push( @output, $line );
         print $line;
@@ -240,14 +265,14 @@ check_allocations {
             $user{$u}++;
         }
     }
-    print STDERR "Reading list of accounts from $passwd_file ...\n" if $debug;
+    print "Reading list of accounts from $passwd_file ...\n" if $debug;
     open( PASSWD, "< $passwd_file" )
         or die "Unable to open $passwd_file: $!";
     while ( my $line = <PASSWD> ) {
         my @f = split( ':', $line, 4 );
         next unless $f[2] >= 1000; # skip system accounts
         if ( $f[0] !~ /^([a-z0-9]{3,32})$/i ) {
-            print STDERR "illegal username in $passwd_file, skipping: $f[0]\n";
+            print "illegal username in $passwd_file, skipping: $f[0]\n";
             next;
         }
         $user{$f[0]}++;
@@ -266,42 +291,49 @@ check_allocations {
     # Find users who should be added to allocations:
     #   not in %allocation_user
     #   but is in %allocation_policy_user
-    print STDERR "Calculating additions:\n" if $debug;
+    print "Calculating additions:\n" if $debug;
     my %allocation_add_user = ();
     for my $a ( keys ( %allocation_policy_user ) ) {
         for my $u ( keys( %{$allocation_policy_user{$a}} ) ) {
             $allocation_add_user{$a}{$u} = 1 unless
                 $allocation_user{$a}{$u};
-            print STDERR "  allocation $a should have user $u and actually " . ( $allocation_policy_user{$a}{$u} ? "does" : "does NOT" ) . "\n" if $debug;
+            print "  allocation $a should have user $u and actually " . ( $allocation_policy_user{$a}{$u} ? "does" : "does NOT" ) . "\n" if $debug;
         }
     }
 
     # Find users who should be removed from allocations:
     #   is in %allocation_user
     #   but not in %allocation_policy_user
-    print STDERR "Calculating removals:\n" if $debug;
+    print "Calculating removals:\n" if $debug;
     my %allocation_remove_user = ();
     for my $a ( keys ( %allocation_user ) ) {
         for my $u ( keys( %{$allocation_user{$a}} ) ) {
             $allocation_remove_user{$a}{$u} = 1 unless
                 $allocation_policy_user{$a}{$u};
-            print STDERR "  allocation $a has user $u who " . ( $allocation_policy_user{$a}{$u} ? "should" : "should NOT" ) . " be in that allocation\n" if $debug;
+            print "  allocation $a has user $u who " . ( $allocation_policy_user{$a}{$u} ? "should" : "should NOT" ) . " be in that allocation\n" if $debug;
         }
     }
 
     # Print results:
+    print "\nSet the userlist to:\n\n";
+    for my $a ( keys ( %allocation_policy_user ) ) {
+        next unless grep ( $_ eq $a, @allocations );
+        print "set $a: "
+            . join( ',', sort( keys ( %{$allocation_policy_user{$a}} ) ) )
+            . "\n";
+    }
     print "\nAdd the following:\n\n";
     for my $a ( sort( keys ( %allocation_add_user ) ) ) {
         next unless grep ( $_ eq $a, @allocations );
-        print "add to $a: "
-            . join( ' ', sort( keys ( %{$allocation_add_user{$a}} ) ) )
+        print "ADD TO $a: "
+            . join( ',', sort( keys ( %{$allocation_add_user{$a}} ) ) )
             . "\n";
     }
     print "\nCONSIDER removing the following (policy does not say that these users should be in these allocations, but they may be legitimate nonetheless):\n\n";
     for my $a ( sort( keys ( %allocation_remove_user ) ) ) {
         next unless grep ( $_ eq $a, @allocations );
-        print "remove from $a: "
-            . join( ' ', sort( keys ( %{$allocation_remove_user{$a}} ) ) )
+        print "REMOVE FROM $a: "
+            . join( ',', sort( keys ( %{$allocation_remove_user{$a}} ) ) )
             . "\n";
     }
     print "\n";
@@ -323,33 +355,33 @@ my $result = GetOptions(
   'debug'         => \$debug,
   );
 if ( ! $result || $show_usage ) {
-    print STDERR "usage: \n";
-    print STDERR "  $0 [--show] [--create-ticket] [--debug] user1 userame2 ...\n";
-    print STDERR "  $0 [--debug] --audit [--passwd-file=FILE] [allocation1 allocation2 ...]\n";
+    print "usage: \n";
+    print "  $0 [--show] [--create-ticket] [--debug] user1 userame2 ...\n";
+    print "  $0 [--debug] --audit [--passwd-file=FILE] [allocation1 allocation2 ...]\n";
     exit( $show_usage ? 0 : 1 );
 }
 
 my @audit_allocations = @managed_allocations;
 if ($do_audit) {
     @audit_allocations = @ARGV if (@ARGV);
-    print STDERR "Will audit the following allocations:\n  "
+    print "Will audit the following allocations:\n  "
         . join( ' ', @audit_allocations ) . "\n" if $debug;
     for my $a (@audit_allocations) {
         get_allocation_userlist( $a );
     }
-    print STDERR "Allocation userlist:\n" if $debug;
-    print STDERR Dumper( \%allocation_user ) if $debug;
+    print "Allocation userlist:\n" if $debug;
+    print Dumper( \%allocation_user ) if $debug;
 }
 
-print STDERR "Connecting to LDAP ($ldap_server) ...\n" if $debug;
+print "Connecting to LDAP ($ldap_server) ...\n" if $debug;
 $ldap = Net::LDAP->new( $ldap_server, version => 3 )
     or die "LDAP connect failed: $@";
 
-print STDERR "Doing LDAP start_tls...\n" if $debug;
+print "Doing LDAP start_tls...\n" if $debug;
 my $msg = $ldap->start_tls( verify=> 'require', cafile => $ca_file );
 die "LDAP start_tls failed: " . $msg->error() if $msg->code();
 
-print STDERR "Binding to LDAP as $bind_dn ...\n" if $debug;
+print "Binding to LDAP as $bind_dn ...\n" if $debug;
 $msg = $ldap->bind( $bind_dn, password => $bind_password );
 die "LDAP bind failed: " . $msg->error() if $msg->code();
 
@@ -361,8 +393,8 @@ if ( $do_audit ) {
     check_users( @ARGV );
 }
 
-print STDERR "Unbinding from LDAP...\n" if $debug;
+print "Unbinding from LDAP...\n" if $debug;
 $ldap->unbind();
-print STDERR "Exiting with return code $error\n" if $debug;
+print "Exiting with return code $error\n" if $debug;
 exit( $error );
 
