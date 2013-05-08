@@ -4,9 +4,9 @@ ABOUT
 
 `fluxaaa` -- Flux Allocation and Account Adviser
 
-Reports on which Moab allocations user accounts should be added to on the Flux High Performance Compute cluster at the University of Michigan.
+Reports on which Moab allocations user accounts should be added to on the Flux High Performance Computing cluster at the University of Michigan.
 
-Full documentation is available to Flux Support Staff at the University of Michigan at [https://sites.google.com/a/umich.edu/flux-support/support-staff-documents/allocation-requests/flux-allocation-and-account-adviser-script](https://sites.google.com/a/umich.edu/flux-support/support-staff-documents/allocation-requests/flux-allocation-and-account-adviser-script)   It is hoped that that documentation can be moved to GitHub eventually; in the meantime, if you need more information about `fluxaaa` and do not have access to the above web page, please contact markmont@umich.edu.
+Additional documentation may be available to Flux Support Staff at the University of Michigan at [https://sites.google.com/a/umich.edu/flux-support/](https://sites.google.com/a/umich.edu/flux-support/).
 
 
 SYNOPSIS
