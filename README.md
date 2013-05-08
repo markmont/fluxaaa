@@ -6,7 +6,7 @@ ABOUT
 
 Reports on which Moab allocations user accounts should be added to on the Flux High Performance Compute cluster at the University of Michigan.
 
-Full documentation is available to Flux Support Staff at the University of Michigan at [https://sites.google.com/a/umich.edu/flux-support/support-staff-documents/allocation-requests/flux-allocation-and-account-adviser-script](https://sites.google.com/a/umich.edu/flux-support/support-staff-documents/allocation-requests/flux-allocation-and-account-adviser-script)   It is hoped that that documentation can be moved to GitHub eventually; in the meantime, if you need more information about fluxaaa and do not have access to the above web page, please contact markmont@umich.edu.
+Full documentation is available to Flux Support Staff at the University of Michigan at [https://sites.google.com/a/umich.edu/flux-support/support-staff-documents/allocation-requests/flux-allocation-and-account-adviser-script](https://sites.google.com/a/umich.edu/flux-support/support-staff-documents/allocation-requests/flux-allocation-and-account-adviser-script)   It is hoped that that documentation can be moved to GitHub eventually; in the meantime, if you need more information about `fluxaaa` and do not have access to the above web page, please contact markmont@umich.edu.
 
 
 SYNOPSIS
@@ -43,6 +43,76 @@ Currently, policies for allocations are hard-coded into the `fluxaaa` script, in
 * `stats_flux` (Department allocation for Statistics: Only Ph.D. students in Statistics; faculty, post-docs, and others get approved/added manually)
 
 To add policies for other allocations, refer to [Adding New Allocation Policies](#addpolicy), below.
+
+
+ACCOUNT CREATION MODE
+=====================
+
+Account creation mode is the default mode of operation for the `fluxaaa` script.  It answers the question, "what allocations should these users have access to?"   Here is an example:
+
+    [markmont@flux-login1 ~]$ /home2/markmont/accounts/fluxaaa bjensen markmont nobody
+    lsa_flux: bjensen,markmont
+    example_flux: bjensen
+    [markmont@flux-login1 ~]$
+
+In the example above, the `fluxaaa` script applies all of the allocation policies it knows about for three users given and returns the list of allocations that those users should be added to.
+
+The `--create-ticket` option can be used to send an email to automatically open a support ticket for the change.  It is recommended that `fluxaaa` be run without the `--create-ticket` option initially, and then run again with `--create-ticket` only if the results are correct.
+
+The `--show` option causes `fluxaaa` to display everything in the users' LDAP (MCommunity directory) entry.  This can be useful for helping to determine who is responsible for supporting a user, for manually creating accounts, or when coding new allocation policies.
+
+    [markmont@flux-login1 ~]$ /home2/markmont/accounts/fluxaaa --show markmont
+    
+    ------------------------------------------------------------------------
+    dn:uid=markmont,ou=People,dc=umich,dc=edu
+    
+              messagingURI: markmont@umich.edu@gmail.com
+            umichDisplaySN: Montague
+        umichPostalAddress: LSA Dean: Info. Technology $ 1112 LSA $ 500 S State Street $ Ann Arbor MI 48109
+    umichPostalAddressData: {addr1=LSA Dean: Info. Technology}:{addr2=1112 LSA}:{addr3=500 S State Street}:{city=Ann Arbor}:{state=MI}:{postal=48109}:{nation=UNITED STATES}:{nationCode=USA}
+           umichAlumStatus: {campus=UM_ANN-ARBOR}:{degSchool=College of Engineering}:{classYr=XXXX}
+                umichTitle: App Programmer/Analyst Sr
+         umichNameOfRecord: Mark Montague
+            umichInstRoles: AlumniAA
+                            RegularStaffAA
+                   umichHR: {jobCategory=Staff}:{campus=UM_ANN-ARBOR}:{deptId=172900}:{deptGroup=COLLEGE_OF_LSA}:{deptDescription=LSA Dean: Info. Technology}:{deptGroupDescription=College of Lit, Science & Arts}:{deptVPArea=PRVST_EXC_VP_ACA_AFF}:{jobcode=101904}:{jobFamily=210}:{emplStatus=A}:{regTemp=R}:{supervisorId=XXXXXXXX}:{tenureStatus=NA}
+          umichDescription: Member of the LSA IT Advocacy and Research Support team.
+             umichAltPhone: (cell phone, urgent matters only) +1 734 717-2422
+                    notice: Nothing to see here.
+                     ferpa: N
+                  entityid: XXXXXXXX
+                loginShell: /bin/csh
+             homeDirectory: /users/markmont
+                 gidNumber: 10
+                 uidNumber: 5366
+               displayName: Mark Montague
+                 homePhone: XXX/XXX-XXXX
+                      mail: markmont@umich.edu
+                       uid: markmont
+                 givenName: Mark
+           telephoneNumber: 734/763-7413
+                        sn: Montague
+                        ou: Alumni
+                            LSA Dean: Info. Technology - Faculty and Staff
+                            College of Lit, Science & Arts - Faculty and Staff
+               objectClass: inetOrgPerson
+                            posixAccount
+                            umichPerson
+                            krbForeignPrincipalAux
+                            posixGroup
+                            organizationalPerson
+                            person
+                            ndsLoginProperties
+                            top
+                            DirXML-EntitlementRecipient
+                            DirXML-PasswordSyncStatusUser
+                        cn: Mark A Montague
+                            Mark Montague
+    
+    lsa_flux: markmont
+    [markmont@flux-login1 ~]$
+
+Finally, the `--debug` option will display voluminous amounts of information about what the script is doing, and may be useful for troubleshooting problems.
 
 
 ADDING NEW ALLOCATION POLICIES
