@@ -115,10 +115,92 @@ The `--show` option causes `fluxaaa` to display everything in the users' LDAP (M
 Finally, the `--debug` option will display voluminous amounts of information about what the script is doing, and may be useful for troubleshooting problems.
 
 
+AUDITING MODE
+=============
+
+The `fluxaaa` script has an auditing mode that is designed to answer the following two questions:
+
+* Are there any cluster users who should be in an allocation's user list (per the allocation policies) but are not?  This is useful for finding accounts for which allocations were overlooked in the past.
+* Are there users in allocation user lists that do not meet the criteria in the allocation's policy?  This is useful for identifying potential candidates for deprovisioning.
+
+To use auditing mode, invoke `fluxaaa` with the `--audit` option and the name(s) of the allocation(s) to audit.  Note that only allocations for which `fluxaaa` has policies can be audited (refer to the list of defined polices, above).
+
+    [markmont@flux-login1 ~]$ /home2/markmont/accounts/fluxaaa --audit polisci_flux
+    
+    Add the following:
+    
+    add to polisci_flux: bjensen,markmont
+    
+    CONSIDER removing the following (policy does not say that these users should be in these allocations, but they may be legitimate nonetheless):
+    
+    
+    [markmont@flux-login1 ~]$
+
+
+If you specify `--audit` without any allocation names, all allocations for which fluxaaa has policies will be audited.
+
+By default, `fluxaaa` gets its list of users from `/etc/passwd`.  A different password file can be specified with the `--passwd-file=/path/to/file` option.  `fluxaaa` will use the first (username) and third (UID) colon-delimited fields of each line of the file.
+
+The `--debug` option can be used to display information about what the script is doing, but due to the large number of users queried, this can easily result in tend of thousands of lines of output.
+
+
 ADDING NEW ALLOCATION POLICIES
 ==============================
 
-<a id="addpolicy"></a> (To be written)
+<a id="addpolicy"></a>
+To add a new allocation policy to the `fluxaaa` script:
+
+1. Work with the owner of the allocation to decide on what criteria will be used to include/exclude users under the policy.  For example, "Any faculty or graduate student in department X, but no staff, undergraduates, or sponsored individuals."  The criteria must be things that can be automatically determined by a script, preferably by querying an LDAP user entry.  The `fluxaaa --show PUT_USERNAME_HERE` option can be used for a variety of candidate users to see what information is available for use in distinguishing users who should and should not be in the allocation user list.
+2. In `fluxaaa.conf`, edit the definition for `@managaged_allocations` to add the name of the new allocation for which you are creating a policy.
+3. Also in `fluxaaa.conf`, verify that all of the LDAP attributes for person entries that you will be using to make your policy decisions are listed in the defintion of `@attrs`.  Add any attributes that you will be using that are not already listed there.
+4. If you added new attributes in (3) and these attributes have values that are complex data types which need to be parsed (as opposed to simple data types such as strings or integers), add the code to parse the attribute values to the `lookup_user` subroutine in the `fluxaaa` script.
+5. In the `fluxaaa` script, add code to the `determine_user_allocations` subroutine to implement the policy per the criteria from (1).  If the user in question should be added to an allocation user list, per the allocation's policy, then an entry for the name of the allocation should be created in the hash `%a`.  Or if the user should not be added to the allocation user list, do nothing.
+
+For steps (4) and (5), all of the data is stored in the variable `$user_info`, which is:
+
+* A reference to a hash with whose keys are allocation names and whose values are
+    * References to an array whose values are either
+        * The value of the attribute (for attributes with simple types); or,
+        * A reference to a hash (for attributes with complex data types) whose keys are the data types field names and whose values are
+            * The field name's values.
+
+The following Perl documentation may be useful:
+
+* [Tutorial on Perl references](http://perldoc.perl.org/perlreftut.html)
+* [Tutorial on Perl data structures](http://perldoc.perl.org/perldsc.html) (hashes of arrays of hashes, etc.)
+
+Here are examples on how to access `$user_info` values.  The first two examples are for simple attribute types, the last two for a complex attribute type:
+
+```perl
+print $$user_info{'ou'}[0] . "\n";  # First ou value
+print $$user_info{'ou'}[1] . "\n";  # Second ou value
+print $$user_info{'umichHR'}[0]{'jobcode'} . "\n";  # First jobcode
+print $$user_info{'umichHR'}[1]{'jobcode'} . "\n";  # Second jobcode
+```
+
+Since each LDAP attribute can have multiple values, the Perl `grep` function is useful for making decisions without needing to loop and use flag variables.
+
+Here is a complete example of the implementation of the policy for the `lsa_flux` allocation:
+
+```perl
+# lsa_flux: Add a user to this allocation...
+#   IF ou =~ /^College of Lit, Science & Arts/
+#   OR umichHR -> deptGroup = COLLEGE_OF_LSA
+#   OR umichAAAcadProgram -> acadGroup = LSA
+#   OR umichSponsorshipDetail -> deptGroup = COLLEGE_OF_LSA
+
+$a{'lsa_flux'}++ if (
+    grep( /^College of Lit, Science & Arts/, @{$$user_info{'ou'}} ) );
+$a{'lsa_flux'}++ if (
+    grep( ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
+        @{$$user_info{'umichHR'}} ) );
+$a{'lsa_flux'}++ if (
+    grep( ${$_}{'acadGroup'} eq 'LSA',
+        @{$$user_info{'umichAAAcadProgram'}} ) );
+$a{'lsa_flux'}++ if (
+    grep( ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
+        @{$$user_info{'umichSponsorshipDetail'}} ) );
+```
 
 
 SUPPORT
