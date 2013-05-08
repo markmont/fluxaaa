@@ -356,7 +356,7 @@ my $result = GetOptions(
   );
 if ( ! $result || $show_usage ) {
     print "usage: \n";
-    print "  $0 [--show] [--create-ticket] [--debug] user1 userame2 ...\n";
+    print "  $0 [--show] [--create-ticket] [--debug] username1 username2 ...\n";
     print "  $0 [--debug] --audit [--passwd-file=FILE] [allocation1 allocation2 ...]\n";
     exit( $show_usage ? 0 : 1 );
 }
