@@ -14,6 +14,7 @@ use warnings;
 use Net::LDAP;
 use Getopt::Long;
 use Data::Dumper;
+use POSIX qw(strftime);
 
 BEGIN {
     push( @INC, '/home2/markmont/accounts' ); # Where to find fluxaaa.conf
@@ -36,6 +37,7 @@ my $debug = 0;
 my $error = 0;
 my %allocation_user = ();         # users actually in each allocation
 my %allocation_policy_user = ();  # users who should be in each allocation according to the policy we're using
+my $today = strftime( "%Y%m%d", localtime() );
 
 
 sub
@@ -179,15 +181,16 @@ determine_user_allocations {
     
     my $u = $$user_info{'fluxaaa_username'};
 
-    if ( my $allocs = $override_add{$u} ) {
-        for my $alloc (keys(%$allocs)) {
+    if ( my $user_special_allocs = $override_add{$u} ) {
+        for my $alloc (keys(%$user_special_allocs)) {
+            next if $today gt $$user_special_allocs{$alloc};
             print "override: adding $u to $alloc\n" if $debug;
             $a{$alloc}++;
         }
     }
 
-    if ( my $allocs = $override_remove{$u} ) {
-        for my $alloc (keys(%$allocs)) {
+    if ( my $user_special_allocs = $override_remove{$u} ) {
+        for my $alloc (keys(%$user_special_allocs)) {
             print "override: removing $u from $alloc\n" if $debug;
             delete $a{$alloc};
         }
