@@ -140,13 +140,13 @@ determine_user_allocations {
     $a{'lsa_flux'}++ if (
         grep( /^College of Lit, Science & Arts/, @{$$user_info{'ou'}} ) );
     $a{'lsa_flux'}++ if (
-        grep( ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
+        grep( defined(${$_}{'deptGroup'}) && ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
             @{$$user_info{'umichHR'}} ) );
     $a{'lsa_flux'}++ if (
-        grep( ${$_}{'acadGroup'} eq 'LSA',
+        grep( defined(${$_}{'acadGroup'}) && ${$_}{'acadGroup'} eq 'LSA',
             @{$$user_info{'umichAAAcadProgram'}} ) );
     $a{'lsa_flux'}++ if (
-        grep( ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
+        grep( defined(${$_}{'deptGroup'}) && ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
             @{$$user_info{'umichSponsorshipDetail'}} ) );
 
     # polisci_flux
@@ -158,20 +158,20 @@ determine_user_allocations {
     $a{'polisci_flux'}++ if (
         grep( /^LSA Political Science/, @{$$user_info{'ou'}} ) );
     $a{'polisci_flux'}++ if (
-        grep( ${$_}{'deptDescription'} eq 'LSA Political Science',
+        grep( defined(${$_}{'deptDescription'}) && ${$_}{'deptDescription'} eq 'LSA Political Science',
             @{$$user_info{'umichHR'}} ) );
     $a{'polisci_flux'}++ if (
-        grep( ${$_}{'acadPlanFieldDescr'} eq 'Political Science',
+        grep( defined(${$_}{'acadPlanFieldDescr'}) && ${$_}{'acadPlanFieldDescr'} eq 'Political Science',
             @{$$user_info{'umichAAAcadProgram'}} ) );
     $a{'polisci_flux'}++ if (
-        grep( ${$_}{'deptDescription'} eq ' LSA Political Science',
+        grep( defined(${$_}{'deptDescription'}) && ${$_}{'deptDescription'} eq ' LSA Political Science',
             @{$$user_info{'umichSponsorshipDetail'}} ) );
 
     # stats_flux
     #   if umichAAAcadProgram -> acadPlanDescr = Statistics PhD
 
     $a{'stats_flux'}++ if (
-        grep( ${$_}{'acadPlanDescr'} eq 'Statistics PhD',
+        grep( defined(${$_}{'acadPlanDescr'}) && ${$_}{'acadPlanDescr'} eq 'Statistics PhD',
             @{$$user_info{'umichAAAcadProgram'}} ) );
 
 
@@ -318,24 +318,21 @@ check_allocations {
     }
 
     # Print results:
-    print "\nSet the userlist to:\n\n";
     for my $a ( keys ( %allocation_policy_user ) ) {
         next unless grep ( $_ eq $a, @allocations );
-        print "set $a: "
+        print "\nSET $a: "
             . join( ',', sort( keys ( %{$allocation_policy_user{$a}} ) ) )
             . "\n";
     }
-    print "\nAdd the following:\n\n";
     for my $a ( sort( keys ( %allocation_add_user ) ) ) {
         next unless grep ( $_ eq $a, @allocations );
-        print "ADD TO $a: "
+        print "\nADD TO $a: "
             . join( ',', sort( keys ( %{$allocation_add_user{$a}} ) ) )
             . "\n";
     }
-    print "\nCONSIDER removing the following (policy does not say that these users should be in these allocations, but they may be legitimate nonetheless):\n\n";
     for my $a ( sort( keys ( %allocation_remove_user ) ) ) {
         next unless grep ( $_ eq $a, @allocations );
-        print "REMOVE FROM $a: "
+        print "\nREMOVE FROM $a: "
             . join( ',', sort( keys ( %{$allocation_remove_user{$a}} ) ) )
             . "\n";
     }
