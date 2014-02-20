@@ -168,11 +168,44 @@ determine_user_allocations {
             @{$$user_info{'umichSponsorshipDetail'}} ) );
 
     # stats_flux
-    #   if umichAAAcadProgram -> acadPlanDescr = Statistics PhD
+    #   if ( umichHR -> jobCategory = Faculty
+    #     and umichHR -> deptDescription = LSA Statistics )
+    #   or ( umichHR -> jobcode = 134120   # 134120 is used for postdocs
+    #     and umichHR -> deptDescription = LSA Statistics )
+    #   or umichAAAcadProgram -> acadPlanDescr = Statistics PhD
+
+    # If we want to add all graduate students to stats_flux, uncomment these
+    # lines:
+    #$a{'stats_flux'}++ if (
+    #    grep( defined(${$_}{'deptDescription'}) && ${$_}{'deptDescription'} eq 'LSA Statistics', @{$$user_info{'umichHR'}} ) 
+    #    && grep( defined(${$_}{'jobCategory'}) && ${$_}{'jobCategory'} eq 'Staff', @{$$user_info{'umichHR'}} ) );
+
+    $a{'stats_flux'}++ if (
+        grep( defined(${$_}{'deptDescription'}) && ${$_}{'deptDescription'} eq 'LSA Statistics', @{$$user_info{'umichHR'}} ) 
+        && grep( defined(${$_}{'jobCategory'}) && ${$_}{'jobCategory'} eq 'Faculty', @{$$user_info{'umichHR'}} ) );
+
+    $a{'stats_flux'}++ if (
+        grep( defined(${$_}{'deptDescription'}) && ${$_}{'deptDescription'} eq 'LSA Statistics', @{$$user_info{'umichHR'}} ) 
+        && grep( defined(${$_}{'jobcode'}) && ${$_}{'jobcode'} eq '134120', @{$$user_info{'umichHR'}} ) );
 
     $a{'stats_flux'}++ if (
         grep( defined(${$_}{'acadPlanDescr'}) && ${$_}{'acadPlanDescr'} eq 'Statistics PhD',
             @{$$user_info{'umichAAAcadProgram'}} ) );
+
+
+    # stats_fluxm
+    #   if ( umichHR -> jobCategory = Faculty
+    #     and umichHR -> deptDescription = LSA Statistics )
+    #   or ( umichHR -> jobcode = 134120   # 134120 is used for postdocs
+    #     and umichHR -> deptDescription = LSA Statistics )
+
+    $a{'stats_fluxm'}++ if (
+        grep( defined(${$_}{'deptDescription'}) && ${$_}{'deptDescription'} eq 'LSA Statistics', @{$$user_info{'umichHR'}} ) 
+        && grep( defined(${$_}{'jobCategory'}) && ${$_}{'jobCategory'} eq 'Faculty', @{$$user_info{'umichHR'}} ) );
+
+    $a{'stats_fluxm'}++ if (
+        grep( defined(${$_}{'deptDescription'}) && ${$_}{'deptDescription'} eq 'LSA Statistics', @{$$user_info{'umichHR'}} ) 
+        && grep( defined(${$_}{'jobcode'}) && ${$_}{'jobcode'} eq '134120', @{$$user_info{'umichHR'}} ) );
 
 
     #
