@@ -131,21 +131,21 @@ determine_user_allocations {
     #print $$user_info{'umichHR'}[0]{'jobcode'} . "\n";  # First jobcode
     #print $$user_info{'umichHR'}[1]{'jobcode'} . "\n";  # Second jobcode
 
-    # lsa_flux
+    # lsa_flux, lsa_fluxm, lsa_fluxg
     #   if ou =~ /^College of Lit, Science & Arts/
     #   or umichHR -> deptGroup = COLLEGE_OF_LSA
     #   or umichAAAcadProgram -> acadGroup = LSA
     #   or umichSponsorshipDetail -> deptGroup = COLLEGE_OF_LSA
 
-    $a{'lsa_flux'}++ if (
+    ($a{'lsa_flux'}++, $a{'lsa_fluxm'}++, $a{'lsa_fluxg'}++) if (
         grep( /^College of Lit, Science & Arts/, @{$$user_info{'ou'}} ) );
-    $a{'lsa_flux'}++ if (
+    ($a{'lsa_flux'}++, $a{'lsa_fluxm'}++, $a{'lsa_fluxg'}++) if (
         grep( defined(${$_}{'deptGroup'}) && ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
             @{$$user_info{'umichHR'}} ) );
-    $a{'lsa_flux'}++ if (
+    ($a{'lsa_flux'}++, $a{'lsa_fluxm'}++, $a{'lsa_fluxg'}++) if (
         grep( defined(${$_}{'acadGroup'}) && ${$_}{'acadGroup'} eq 'LSA',
             @{$$user_info{'umichAAAcadProgram'}} ) );
-    $a{'lsa_flux'}++ if (
+    ($a{'lsa_flux'}++, $a{'lsa_fluxm'}++, $a{'lsa_fluxg'}++) if (
         grep( defined(${$_}{'deptGroup'}) && ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
             @{$$user_info{'umichSponsorshipDetail'}} ) );
 
