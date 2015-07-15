@@ -130,6 +130,24 @@ determine_user_allocations {
     #print $$user_info{'ou'}[1] . "\n";  # Second ou value
     #print $$user_info{'umichHR'}[0]{'jobcode'} . "\n";  # First jobcode
     #print $$user_info{'umichHR'}[1]{'jobcode'} . "\n";  # Second jobcode
+    
+    # engin_flux
+    #   if ou =~ /^College of Engineering/
+    #   or umichHR -> deptGroup = COLLEGE_ENGINEERING
+    #   or umichAAAcadProgram -> acadGroup = ENG
+    #   or umichSponsorshipDetail -> deptGroup = COLLEGE_ENGINEERING
+
+    $a{'engin_flux'}++ if (
+        grep( /^College of Engineering/, @{$$user_info{'ou'}} ) );
+    $a{'engin_flux'}++ if (
+        grep( defined(${$_}{'deptGroup'}) && ${$_}{'deptGroup'} eq 'COLLEGE_ENGINEERING',
+            @{$$user_info{'umichHR'}} ) );
+    $a{'engin_flux'}++ if (
+        grep( defined(${$_}{'acadGroup'}) && ${$_}{'acadGroup'} eq 'ENG',
+            @{$$user_info{'umichAAAcadProgram'}} ) );
+    $a{'engin_flux'}++ if (
+        grep( defined(${$_}{'deptGroup'}) && ${$_}{'deptGroup'} eq 'COLLEGE_ENGINEERING',
+            @{$$user_info{'umichSponsorshipDetail'}} ) );
 
     # lsa_flux, lsa_fluxm, lsa_fluxg
     #   if ou =~ /^College of Lit, Science & Arts/
@@ -148,7 +166,7 @@ determine_user_allocations {
     ($a{'lsa_flux'}++, $a{'lsa_fluxm'}++, $a{'lsa_fluxg'}++) if (
         grep( defined(${$_}{'deptGroup'}) && ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
             @{$$user_info{'umichSponsorshipDetail'}} ) );
-
+    
     # polisci_flux
     #   if ou =~ /^LSA Political Science/
     #   or umichHR -> deptDescription = LSA Political Science
@@ -206,17 +224,6 @@ determine_user_allocations {
     $a{'stats_fluxm'}++ if (
         grep( defined(${$_}{'deptDescription'}) && ${$_}{'deptDescription'} eq 'LSA Statistics', @{$$user_info{'umichHR'}} ) 
         && grep( defined(${$_}{'jobcode'}) && ${$_}{'jobcode'} eq '134120', @{$$user_info{'umichHR'}} ) );
-      
-
-    # sph_flux
-    #   if ou =~ /^School of Public Health/
-    #   or umichSponsorshipDetail -> deptGroup = SCHOOL_PUB_HEALTH
-
-    ($a{'sph_flux'}++) if (
-        grep( /^School of Public Health/, @{$$user_info{'ou'}} ) );
-    ($a{'sph_flux'}++\) if (
-        grep( defined(${$_}{'deptGroup'}) && ${$_}{'deptGroup'} eq 'SCHOOL_PUB_HEALTH',
-            @{$$user_info{'umichHR'}} ) );
 
 
     #
