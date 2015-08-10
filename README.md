@@ -50,7 +50,7 @@ ACCOUNT CREATION MODE
 
 Account creation mode is the default mode of operation for the `fluxaaa` script.  It answers the question, "what allocations should these users have access to?"   Here is an example:
 
-    [markmont@flux-login1 ~]$ /home2/markmont/accounts/fluxaaa bjensen markmont nobody
+    [markmont@flux-login1 ~]$ /home/markmont/accounts/fluxaaa bjensen markmont nobody
     lsa_flux: bjensen,markmont
     example_flux: bjensen
     [markmont@flux-login1 ~]$
@@ -61,7 +61,7 @@ The `--create-ticket` option can be used to send an email to automatically open 
 
 The `--show` option causes `fluxaaa` to display everything in the users' LDAP (MCommunity directory) entry.  This can be useful for helping to determine who is responsible for supporting a user, for manually creating accounts, or when coding new allocation policies.
 
-    [markmont@flux-login1 ~]$ /home2/markmont/accounts/fluxaaa --show markmont
+    [markmont@flux-login1 ~]$ /home/markmont/accounts/fluxaaa --show markmont
     
     ------------------------------------------------------------------------
     dn:uid=markmont,ou=People,dc=umich,dc=edu
@@ -125,7 +125,7 @@ The `fluxaaa` script has an auditing mode that is designed to answer the followi
 
 To use auditing mode, invoke `fluxaaa` with the `--audit` option and the name(s) of the allocation(s) to audit.  Note that only allocations for which `fluxaaa` has policies can be audited (refer to the list of defined polices, above).
 
-    [markmont@flux-login1 ~]$ /home2/markmont/accounts/fluxaaa --audit polisci_flux
+    [markmont@flux-login1 ~]$ /home/markmont/accounts/fluxaaa --audit polisci_flux
     
     Add the following:
     

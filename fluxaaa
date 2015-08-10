@@ -17,7 +17,7 @@ use Data::Dumper;
 use POSIX qw(strftime);
 
 BEGIN {
-    push( @INC, '/home2/markmont/accounts' ); # Where to find fluxaaa.conf
+    push( @INC, '/home/markmont/accounts' ); # Where to find fluxaaa.conf
     %ENV = (); # for security
 }
 
