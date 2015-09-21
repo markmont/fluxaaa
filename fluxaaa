@@ -314,6 +314,7 @@ check_allocations {
 
     # Generate list of all users to search for in LDAP:
     my %user = ();
+    my %passwd_user = ();
     for my $a (@allocations) {
         for my $u ( keys( %{$allocation_user{$a}} ) ) {
             $user{$u}++;
@@ -330,6 +331,7 @@ check_allocations {
             next;
         }
         $user{$f[0]}++;
+        $passwd_user{$f[0]}++;
     }
     close( PASSWD );
 
@@ -349,6 +351,7 @@ check_allocations {
     my %allocation_add_user = ();
     for my $a ( keys ( %allocation_policy_user ) ) {
         for my $u ( keys( %{$allocation_policy_user{$a}} ) ) {
+            next unless $passwd_user{$u}; # skip if they don't have a Flux user account
             $allocation_add_user{$a}{$u} = 1 unless
                 $allocation_user{$a}{$u};
             print "  allocation $a should have user $u and actually " . ( $allocation_policy_user{$a}{$u} ? "does" : "does NOT" ) . "\n" if $debug;
