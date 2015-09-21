@@ -31,6 +31,7 @@ my $passwd_file = '/etc/passwd';
 my $ldap;
 my $show_ldap_entry = 0;
 my $do_audit = 0;
+my $do_audit_set = 0;
 my $create_ticket = 0;
 my $show_usage = 0;
 my $debug = 0;
@@ -372,11 +373,13 @@ check_allocations {
     }
 
     # Print results:
-    for my $a ( keys ( %allocation_policy_user ) ) {
-        next unless grep ( $_ eq $a, @allocations );
-        print "\nSET $a: "
-            . join( ',', sort( keys ( %{$allocation_policy_user{$a}} ) ) )
-            . "\n";
+    if ( $do_audit_set ) {
+        for my $a ( keys ( %allocation_policy_user ) ) {
+            next unless grep ( $_ eq $a, @allocations );
+            print "\nSET $a: "
+                . join( ',', sort( keys ( %{$allocation_policy_user{$a}} ) ) )
+                . "\n";
+        }
     }
     for my $a ( sort( keys ( %allocation_add_user ) ) ) {
         next unless grep ( $_ eq $a, @allocations );
@@ -403,6 +406,7 @@ check_allocations {
 my $result = GetOptions(
   'show'          => \$show_ldap_entry,
   'audit'         => \$do_audit,
+  'audit-set'     => \$do_audit_set,
   'create-ticket' => \$create_ticket,
   'passwd-file=s' => \$passwd_file,
   'help'          => \$show_usage,
@@ -411,9 +415,10 @@ my $result = GetOptions(
 if ( ! $result || $show_usage ) {
     print "usage: \n";
     print "  $0 [--show] [--create-ticket] [--debug] username1 username2 ...\n";
-    print "  $0 [--debug] --audit [--passwd-file=FILE] [allocation1 allocation2 ...]\n";
+    print "  $0 [--debug] --audit [--audit-set] [--passwd-file=FILE] [allocation1 allocation2 ...]\n";
     exit( $show_usage ? 0 : 1 );
 }
+$do_audit = 1 if $do_audit_set;
 
 my @audit_allocations = @managed_allocations;
 if ($do_audit) {

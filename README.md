@@ -14,7 +14,7 @@ SYNOPSIS
 
     fluxaaa [--show] [--create-ticket] [--debug] username1 username2 ...
 
-    fluxaaa [--debug] --audit [--passwd-file=FILE] [allocation1 allocation2 ...]
+    fluxaaa [--debug] --audit [--audit-set] [--passwd-file=FILE] [allocation1 allocation2 ...]
 
 
 BACKGROUND
@@ -138,6 +138,8 @@ To use auditing mode, invoke `fluxaaa` with the `--audit` option and the name(s)
 
 
 If you specify `--audit` without any allocation names, all allocations for which fluxaaa has policies will be audited.
+
+If you specify `--audit-set`, the output will include what the full userlist(s) should be.  Specifying `--audit-set` automatically implies `--audit`.
 
 By default, `fluxaaa` gets its list of users from `/etc/passwd`.  A different password file can be specified with the `--passwd-file=/path/to/file` option.  `fluxaaa` will use the first (username) and third (UID) colon-delimited fields of each line of the file.
 
