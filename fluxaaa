@@ -155,6 +155,7 @@ determine_user_allocations {
     #   or umichHR -> deptGroup = COLLEGE_OF_LSA
     #   or umichAAAcadProgram -> acadGroup = LSA
     #   or umichSponsorshipDetail -> deptGroup = COLLEGE_OF_LSA
+    #   or umichAAAcadProgram -> acadPlanFieldDescr = Applied and Interdisciplinary Mathematics
 
     ($a{'lsa_flux'}++, $a{'lsa_fluxm'}++, $a{'lsa_fluxg'}++) if (
         grep( /^College of Lit, Science & Arts/, @{$$user_info{'ou'}} ) );
@@ -167,6 +168,9 @@ determine_user_allocations {
     ($a{'lsa_flux'}++, $a{'lsa_fluxm'}++, $a{'lsa_fluxg'}++) if (
         grep( defined(${$_}{'deptGroup'}) && ${$_}{'deptGroup'} eq 'COLLEGE_OF_LSA',
             @{$$user_info{'umichSponsorshipDetail'}} ) );
+    ($a{'lsa_flux'}++, $a{'lsa_fluxm'}++, $a{'lsa_fluxg'}++) if (
+        grep( defined(${$_}{'acadPlanFieldDescr'}) && ${$_}{'acadPlanFieldDescr'} eq 'Applied and Interdisciplinary Mathematics',
+            @{$$user_info{'umichAAAcadProgram'}} ) );
     
     # polisci_flux
     #   if ou =~ /^LSA Political Science/
