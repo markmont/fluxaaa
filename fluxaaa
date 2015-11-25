@@ -262,7 +262,7 @@ check_users {
     my @users = @_;
 
     for my $user (@users) {
-        if ( $user !~ /^([a-z0-9]{3,32})$/i ) {
+        if ( $user !~ /^([a-z0-9-]{3,32})$/i ) {
             print "illegal username, skipping: $user\n";
             $error = 1;
             next;
@@ -331,7 +331,7 @@ check_allocations {
     while ( my $line = <PASSWD> ) {
         my @f = split( ':', $line, 4 );
         next unless $f[2] >= 1000; # skip system accounts
-        if ( $f[0] !~ /^([a-z0-9]{3,32})$/i ) {
+        if ( $f[0] !~ /^([a-z0-9-]{3,32})$/i ) {
             print "illegal username in $passwd_file, skipping: $f[0]\n";
             next;
         }
