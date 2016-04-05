@@ -6,8 +6,6 @@ ABOUT
 
 Reports on which Moab allocations user accounts should be added to on the Flux High Performance Computing cluster at the University of Michigan.
 
-Additional documentation may be available to Flux Support Staff at the University of Michigan at [https://sites.google.com/a/umich.edu/flux-support/](https://sites.google.com/a/umich.edu/flux-support/).
-
 
 SYNOPSIS
 ========
