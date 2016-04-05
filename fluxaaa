@@ -12,9 +12,14 @@ use Net::LDAP;
 use Getopt::Long;
 use Data::Dumper;
 use POSIX qw(strftime);
+use File::stat;
 
 BEGIN {
-    push( @INC, '/usr/cac/rhel6/lsa/arc-admin-utils/etc' ); # Where to find fluxaaa.conf
+    my $conf_dir = '/usr/cac/rhel6/lsa/arc-admin-utils/etc';
+    my $sb = stat( "${conf_dir}/fluxaaa.conf" );
+    die( "fluxaaa.conf is insecure!" )
+        if $sb->mode & 0007 || $sb->gid != 30062;
+    push( @INC, $conf_dir ); # Where to find fluxaaa.conf
     %ENV = (); # for security
 }
 
@@ -22,6 +27,8 @@ our ( @managed_allocations, @attrs );
 our ( $ldap_server, $ca_file, $bind_dn, $bind_password, $search_base );
 our ( %override_add, %override_remove );
 our ( $ticket_email, $default_from, $MDIAG, $SENDMAIL );
+
+
 require "fluxaaa.conf";
 
 my $passwd_file = '/etc/passwd';
