@@ -214,7 +214,7 @@ Additional resources may be available at [http://github.com/markmont/fluxaaa](ht
 LICENSE
 =======
 
-`fluxaaa` is Copyright (C) 2013 Regents of The University of Michigan.
+`fluxaaa` is Copyright (C) 2016 Regents of The University of Michigan.
 
 `fluxaaa` is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

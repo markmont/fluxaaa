@@ -15,7 +15,7 @@ use POSIX qw(strftime);
 use File::stat;
 
 BEGIN {
-    my $conf_dir = '/usr/cac/rhel6/lsa/arc-admin-utils/etc';
+    my $conf_dir = '/sw/lsa/centos7/arc-admin-utils/1.0/etc';
     my $sb = stat( "${conf_dir}/fluxaaa.conf" );
     die( "fluxaaa.conf is insecure!" )
         if $sb->mode & 0007 || $sb->gid != 30062;
